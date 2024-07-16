@@ -250,6 +250,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
 import 'package:lottie/lottie.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() {
   // await dotenv.load(fileName: ".env");
@@ -306,10 +307,26 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
+  Future<void> _requestPermission() async {
+    final status = await Permission.locationWhenInUse.request();
+    if (status.isGranted) {
+      fetchWeatherData();
+    } else {
+      // Handle the case where the user denied the permission
+      setState(() {
+        _isLoading = false;
+        _location = 'Permission Denied';
+        _description = 'N/A';
+        _temp = 0.0;
+        _lottieAnimation = 'assets/loading.json';
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    fetchWeatherData();
+    _requestPermission();
   }
 
   @override
@@ -317,6 +334,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
+        backgroundColor: Color(0xff1e1e1e),
         body: _isLoading
             ? const Center(
                 child: CircularProgressIndicator(),
@@ -325,34 +343,43 @@ class _MyAppState extends State<MyApp> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Lottie animation representing the weather
-                    Lottie.asset(
-                      _lottieAnimation,
-                      width: 250,
-                      height: 250,
-                      fit: BoxFit.fill,
+                    Icon(
+                      Icons.location_on,
+                      size: 40,
+                      color: Color(0xFFe5e5e5),
                     ),
-                    // const SizedBox(height: 16),
-                    Text(
-                      '${_temp.toInt()}°C',
-                      style: const TextStyle(
-                          fontSize: 40,
-                          fontFamily: 'auraFont',
-                          color: Color(0xFF323232)),
-                    ),
-                    // SizedBox(height: 16),
                     Text(
                       _location,
                       style: const TextStyle(
                           fontSize: 24,
-                          fontFamily: 'auraFont',
-                          color: Color(0xFF323232)),
+                          fontFamily: 'norwester',
+                          color: Color(0xFFe5e5e5)),
+                    ),
+                    const SizedBox(height: 80),
+
+                    // Lottie animation representing the weather
+                    Lottie.asset(
+                      _lottieAnimation,
+                      width: 300,
+                      height: 300,
+                      fit: BoxFit.fill,
+                    ),
+                    const SizedBox(height: 100),
+                    Text(
+                      '${_temp.toInt()}°C',
+                      style: const TextStyle(
+                          fontSize: 50,
+                          fontFamily: 'norwester',
+                          color: Color(0xFFe5e5e5)),
                     ),
                     Text(
                       _description,
-                      style:
-                          const TextStyle(fontSize: 24, fontFamily: 'auraFont'),
+                      style: const TextStyle(
+                          fontSize: 20,
+                          fontFamily: 'norwester',
+                          color: Color(0xFFe5e5e5)),
                     ),
+                    // SizedBox(height: 16),
                   ],
                 ),
               ),
